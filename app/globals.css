@@ -138,11 +138,12 @@ body{
 .hero{
   position:absolute;
   right:-510px;
-  top:-20px;
+  top:50px;
   width:1500px;
   z-index:2;
   pointer-events:none;
 }
+
 
 .heart{
   position:absolute;
@@ -235,7 +236,7 @@ body.mobile .coming{
 
 /* ✅ baby centered */
 body.mobile .hero{
-  left: 50%;
+  left: -150%;
   right: auto;
   top: 670px;
   width: 1200px;
@@ -245,8 +246,8 @@ body.mobile .hero{
 
 /* ✅ QR centered at bottom (like your tuned android version) */
 body.mobile .qr{
-  left: 50%;
-  bottom: 60px;
+  left: -10%;
+  bottom: 900px;
   width: 450px;
   transform: translateX(-50%);
   z-index: 999;
