@@ -3,27 +3,38 @@
   --H: 1152;
   --milk: #f5f5f5;
   --leftShift: -140px;
-  --vh: 1vh;
 
-  /* brand magenta (same as N) */
+  /* This is set by JS to exact px height: e.g. 812px */
+  --vh: 100vh;
+
   --magenta: #B61E73;
 }
 
 *{ margin:0; padding:0; box-sizing:border-box; }
-html, body{
+
+html{
   width:100%;
-  height:100%;
+  background: var(--milk);
+}
+
+body{
+  width:100%;
   background: var(--milk);
   overflow:hidden;
+  height: var(--vh); /* Safari-safe */
+  -webkit-text-size-adjust: 100%;
 }
-body{ height: calc(var(--vh) * 100); }
 
 /* ========= PRELOADER ========= */
 .preloader{
-  position:fixed; inset:0;
+  position:fixed;
+  inset:0;
   background: rgba(245,245,245,.98);
-  display:flex; align-items:center; justify-content:center;
-  z-index:99999; opacity:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:99999;
+  opacity:1;
   transition: opacity .55s ease, transform .55s ease;
 }
 .preloader.hide{
@@ -54,9 +65,11 @@ body{ height: calc(var(--vh) * 100); }
 /* ========= LAYOUT ========= */
 .viewport{
   width:100vw;
-  height: calc(var(--vh) * 100);
+  height: var(--vh);
   background: var(--milk);
-  display:flex; align-items:center; justify-content:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   overflow:hidden;
 }
 
@@ -71,7 +84,8 @@ body{ height: calc(var(--vh) * 100); }
 
 /* DESKTOP: group shift */
 .leftGroup{
-  position:absolute; inset:0;
+  position:absolute;
+  inset:0;
   transform: translateX(var(--leftShift));
   z-index:50;
   pointer-events:none;
@@ -113,7 +127,7 @@ body{ height: calc(var(--vh) * 100); }
   pointer-events:none;
 }
 
-/* ========= DOPE ANIMATIONS ========= */
+/* ========= ANIMATIONS ========= */
 .reveal{
   opacity:0;
   transform: translateY(16px) scale(.985);
@@ -129,7 +143,6 @@ body.ready .reveal{
   filter: blur(0);
 }
 
-/* stagger delays */
 .d1{ transition-delay: .05s; }
 .d2{ transition-delay: .16s; }
 .d3{ transition-delay: .26s; }
@@ -137,7 +150,6 @@ body.ready .reveal{
 .d5{ transition-delay: .46s; }
 .d6{ transition-delay: .56s; }
 
-/* QR pulse */
 @keyframes qrPulse {
   0%   { transform: scale(1); }
   35%  { transform: scale(1.06); }
@@ -147,17 +159,13 @@ body.ready .reveal{
 body.ready .qr.pulse{ animation: qrPulse 1.6s ease-in-out infinite; }
 .qr:hover{ animation-play-state: paused; transform: scale(1.04); }
 
-/* subtle floating baby (dope but not annoying) */
 @keyframes floaty {
   0%   { transform: translateY(0); }
   50%  { transform: translateY(-10px); }
   100% { transform: translateY(0); }
 }
-body.ready .floaty{
-  animation: floaty 5.5s ease-in-out infinite;
-}
+body.ready .floaty{ animation: floaty 5.5s ease-in-out infinite; }
 
-/* accessibility */
 @media (prefers-reduced-motion: reduce){
   .spinner{ animation: none; }
   .reveal{ transition: none; opacity:1; transform:none; filter:none; }
@@ -166,7 +174,7 @@ body.ready .floaty{
 }
 
 /* =======================================================================
-   MOBILE (same layout you already tuned)
+   MOBILE
    ======================================================================= */
 body.mobile .artboard{
   width: 720px;
@@ -191,7 +199,6 @@ body.mobile .coming{
   transform: translateX(-50%);
 }
 
-/* baby pushed left by 40px */
 body.mobile .hero{
   left: 50%;
   right:auto;
@@ -201,7 +208,6 @@ body.mobile .hero{
   z-index: 20;
 }
 
-/* QR centered and on top */
 body.mobile .qr{
   left: 50%;
   bottom: 60px;
