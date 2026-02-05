@@ -1,0 +1,184 @@
+:root{
+  --W: 2048;
+  --H: 1152;
+  --milk: #f5f5f5;
+  --leftShift: -140px;
+  --vh: 1vh;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+html, body{
+  width:100%;
+  height:100%;
+  background: var(--milk);
+  overflow:hidden;
+}
+body{ height: calc(var(--vh) * 100); }
+
+/* ========= PRELOADER ========= */
+.preloader{
+  position:fixed; inset:0;
+  background: rgba(245,245,245,.98);
+  display:flex; align-items:center; justify-content:center;
+  z-index:99999; opacity:1;
+  transition: opacity .55s ease;
+}
+.preloader.hide{ opacity:0; pointer-events:none; }
+.loaderWrap{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+.spinner{
+  width:58px; height:58px; border-radius:50%;
+  border:7px solid rgba(160,0,190,.18);
+  border-top-color: rgba(160,0,190,.95);
+  animation: spin .9s linear infinite;
+}
+@keyframes spin{ to{ transform: rotate(360deg); } }
+.loadingText{
+  font: 600 14px/1.1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  color: rgba(120,0,150,.85);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* ========= LAYOUT ========= */
+.viewport{
+  width:100vw;
+  height: calc(var(--vh) * 100);
+  background: var(--milk);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+
+.artboard{
+  position:relative;
+  width: calc(var(--W) * 1px);
+  height: calc(var(--H) * 1px);
+  background: var(--milk);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* DESKTOP: group shift */
+.leftGroup{
+  position:absolute; inset:0;
+  transform: translateX(var(--leftShift));
+  z-index:50;
+  pointer-events:none;
+}
+.leftGroup img{ pointer-events:auto; }
+
+/* ========= DESKTOP POSITIONS ========= */
+.logo{ position:absolute; left:250px; top:80px; width:370px; z-index:5; }
+.coming{ position:absolute; left:50px; top:400px; width:820px; z-index:5; }
+.forme3{ position:absolute; left:860px; top:320px; width:95px; z-index:6; }
+
+.qr{
+  position:absolute;
+  left:150px;
+  bottom:85px;
+  width:380px;
+  z-index:8;
+  cursor:pointer;
+  transform-origin:center center;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.12));
+}
+
+.hero{
+  position:absolute;
+  right:-510px;
+  top:-20px;
+  width:1500px;
+  z-index:2;
+  pointer-events:none;
+}
+
+.heart{
+  position:absolute;
+  right:370px;
+  top:430px;
+  width:210px;
+  z-index:6;
+  pointer-events:none;
+}
+
+/* ========= REVEAL ========= */
+.reveal{
+  opacity:0;
+  transform: translateY(14px) scale(.985);
+  filter: blur(6px);
+  transition:
+    opacity .75s ease,
+    transform .85s cubic-bezier(.2,.85,.2,1),
+    filter .9s ease;
+}
+body.ready .reveal{
+  opacity:1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+.d1{ transition-delay: .05s; }
+.d2{ transition-delay: .14s; }
+.d3{ transition-delay: .22s; }
+.d4{ transition-delay: .30s; }
+.d5{ transition-delay: .38s; }
+.d6{ transition-delay: .46s; }
+
+/* ========= QR PULSE ========= */
+@keyframes qrPulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.06); }
+  60%  { transform: scale(.98); }
+  100% { transform: scale(1); }
+}
+body.ready .qr.pulse{ animation: qrPulse 1.6s ease-in-out infinite; }
+.qr:hover{ animation-play-state: paused; transform: scale(1.04); }
+@media (hover: none){ .qr:hover{ transform: none; } }
+
+@media (prefers-reduced-motion: reduce){
+  .spinner{ animation: none; }
+  .reveal{ transition: none; opacity:1; transform:none; filter:none; }
+  body.ready .qr.pulse{ animation: none; }
+}
+
+/* =======================================================================
+   MOBILE: SAME AS YOUR INDEX
+   ======================================================================= */
+body.mobile .artboard{
+  width: 720px;
+  height: 1600px;
+}
+
+body.mobile .leftGroup{ transform:none; }
+
+body.mobile .forme3{ display:none; }
+body.mobile .heart{ display:none; }
+
+body.mobile .logo{
+  left: 50%;
+  top: 70px;
+  width: 300px;
+  transform: translateX(-50%);
+}
+
+body.mobile .coming{
+  left: 50%;
+  top: 310px;
+  width: 520px;
+  transform: translateX(-50%);
+}
+
+body.mobile .hero{
+  left: 50%;
+  right:auto;
+  top: 670px;
+  width: 1200px;
+  transform: translateX(-50%);
+  z-index: 20;
+}
+
+body.mobile .qr{
+  left: 0%;
+  bottom: 60px;
+  width: 450px;
+  transform: translateX(-50%);
+  z-index: 999;
+}
