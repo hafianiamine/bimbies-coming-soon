@@ -176,8 +176,8 @@ body.mobile .hero{
 }
 
 body.mobile .qr{
-  left: 0%;
-  bottom: 60px;
+  left: 20%;
+  bottom: 900px;
   width: 450px;
   transform: translateX(-50%);
   z-index: 999;
