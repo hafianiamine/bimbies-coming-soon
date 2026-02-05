@@ -206,10 +206,14 @@ body.ready .floaty{ animation: floaty 5.5s ease-in-out infinite; }
 /* =======================================================================
    MOBILE (kept very close to your current tuning)
    ======================================================================= */
+/* =======================================================================
+   MOBILE: FIXED (center baby + center QR)
+   ======================================================================= */
 body.mobile .artboard{
   width: 720px;
   height: 1600px;
 }
+
 body.mobile .leftGroup{ transform:none; }
 
 body.mobile .forme3{ display:none; }
@@ -229,18 +233,20 @@ body.mobile .coming{
   transform: translateX(-50%);
 }
 
+/* ✅ baby centered */
 body.mobile .hero{
-  left: 40%;
-  right:auto;
+  left: 50%;
+  right: auto;
   top: 670px;
   width: 1200px;
   transform: translateX(-50%);
   z-index: 20;
 }
 
+/* ✅ QR centered at bottom (like your tuned android version) */
 body.mobile .qr{
-  left: 10%;
-  bottom: 900px;
+  left: 50%;
+  bottom: 60px;
   width: 450px;
   transform: translateX(-50%);
   z-index: 999;
