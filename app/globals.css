@@ -4,6 +4,9 @@
   --milk: #f5f5f5;
   --leftShift: -140px;
   --vh: 1vh;
+
+  /* brand magenta (same as N) */
+  --magenta: #B61E73;
 }
 
 *{ margin:0; padding:0; box-sizing:border-box; }
@@ -21,26 +24,32 @@ body{ height: calc(var(--vh) * 100); }
   background: rgba(245,245,245,.98);
   display:flex; align-items:center; justify-content:center;
   z-index:99999; opacity:1;
-  transition: opacity .55s ease;
+  transition: opacity .55s ease, transform .55s ease;
 }
-.preloader.hide{ opacity:0; pointer-events:none; }
+.preloader.hide{
+  opacity:0;
+  pointer-events:none;
+  transform: scale(1.02);
+}
+
 .loaderWrap{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+
 .spinner{
   width:58px;
   height:58px;
   border-radius:50%;
-  border:7px solid rgba(182, 30, 115, 0.35); /* same color, faded */
-  border-top-color:#B61E73;                 /* EXACT "N" color */
+  border:7px solid rgba(182, 30, 115, 0.35);
+  border-top-color: var(--magenta);
   animation: spin .9s linear infinite;
 }
+@keyframes spin{ to{ transform: rotate(360deg); } }
 
 .loadingText{
   font: 600 14px/1.1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  color:#B61E73;                            /* EXACT "N" color */
-  letter-spacing:.08em;
-  text-transform:uppercase;
+  color: var(--magenta);
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
-
 
 /* ========= LAYOUT ========= */
 .viewport{
@@ -85,6 +94,7 @@ body{ height: calc(var(--vh) * 100); }
   filter: drop-shadow(0 10px 18px rgba(0,0,0,.12));
 }
 
+/* HERO */
 .hero{
   position:absolute;
   right:-510px;
@@ -103,29 +113,31 @@ body{ height: calc(var(--vh) * 100); }
   pointer-events:none;
 }
 
-/* ========= REVEAL ========= */
+/* ========= DOPE ANIMATIONS ========= */
 .reveal{
   opacity:0;
-  transform: translateY(14px) scale(.985);
-  filter: blur(6px);
+  transform: translateY(16px) scale(.985);
+  filter: blur(10px);
   transition:
-    opacity .75s ease,
-    transform .85s cubic-bezier(.2,.85,.2,1),
-    filter .9s ease;
+    opacity .85s ease,
+    transform 1.05s cubic-bezier(.2,.85,.2,1),
+    filter 1.1s ease;
 }
 body.ready .reveal{
   opacity:1;
   transform: translateY(0) scale(1);
   filter: blur(0);
 }
-.d1{ transition-delay: .05s; }
-.d2{ transition-delay: .14s; }
-.d3{ transition-delay: .22s; }
-.d4{ transition-delay: .30s; }
-.d5{ transition-delay: .38s; }
-.d6{ transition-delay: .46s; }
 
-/* ========= QR PULSE ========= */
+/* stagger delays */
+.d1{ transition-delay: .05s; }
+.d2{ transition-delay: .16s; }
+.d3{ transition-delay: .26s; }
+.d4{ transition-delay: .36s; }
+.d5{ transition-delay: .46s; }
+.d6{ transition-delay: .56s; }
+
+/* QR pulse */
 @keyframes qrPulse {
   0%   { transform: scale(1); }
   35%  { transform: scale(1.06); }
@@ -134,22 +146,32 @@ body.ready .reveal{
 }
 body.ready .qr.pulse{ animation: qrPulse 1.6s ease-in-out infinite; }
 .qr:hover{ animation-play-state: paused; transform: scale(1.04); }
-@media (hover: none){ .qr:hover{ transform: none; } }
 
+/* subtle floating baby (dope but not annoying) */
+@keyframes floaty {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+body.ready .floaty{
+  animation: floaty 5.5s ease-in-out infinite;
+}
+
+/* accessibility */
 @media (prefers-reduced-motion: reduce){
   .spinner{ animation: none; }
   .reveal{ transition: none; opacity:1; transform:none; filter:none; }
   body.ready .qr.pulse{ animation: none; }
+  body.ready .floaty{ animation: none; }
 }
 
 /* =======================================================================
-   MOBILE: SAME AS YOUR INDEX
+   MOBILE (same layout you already tuned)
    ======================================================================= */
 body.mobile .artboard{
   width: 720px;
   height: 1600px;
 }
-
 body.mobile .leftGroup{ transform:none; }
 
 body.mobile .forme3{ display:none; }
@@ -169,18 +191,20 @@ body.mobile .coming{
   transform: translateX(-50%);
 }
 
+/* baby pushed left by 40px */
 body.mobile .hero{
-  left: 40%;
+  left: 50%;
   right:auto;
   top: 670px;
   width: 1200px;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateX(-40px);
   z-index: 20;
 }
 
+/* QR centered and on top */
 body.mobile .qr{
-  left: 10%;
-  bottom: 900px;
+  left: 50%;
+  bottom: 60px;
   width: 450px;
   transform: translateX(-50%);
   z-index: 999;
