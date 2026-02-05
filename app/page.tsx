@@ -1,217 +1,137 @@
-:root{
-  --W: 2048;
-  --H: 1152;
-  --milk: #f5f5f5;
-  --leftShift: -140px;
+"use client";
 
-  /* This is set by JS to exact px height: e.g. 812px */
-  --vh: 100vh;
+import { useEffect, useRef, useState } from "react";
 
-  --magenta: #B61E73;
-}
+const FB_URL = "https://www.facebook.com/BimbiesOfficielle";
 
-*{ margin:0; padding:0; box-sizing:border-box; }
+export default function Page() {
+  const artboardRef = useRef<HTMLDivElement | null>(null);
+  const [ready, setReady] = useState(false);
 
-html{
-  width:100%;
-  background: var(--milk);
-}
+  useEffect(() => {
+    const artboard = artboardRef.current;
+    if (!artboard) return;
 
-body{
-  width:100%;
-  background: var(--milk);
-  overflow:hidden;
-  height: var(--vh); /* Safari-safe */
-  -webkit-text-size-adjust: 100%;
-}
+    // ---------- FIX: Safari-safe viewport height ----------
+    const setVH = () => {
+      document.documentElement.style.setProperty("--vh", `${window.innerHeight}px`);
+    };
 
-/* ========= PRELOADER ========= */
-.preloader{
-  position:fixed;
-  inset:0;
-  background: rgba(245,245,245,.98);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:99999;
-  opacity:1;
-  transition: opacity .55s ease, transform .55s ease;
-}
-.preloader.hide{
-  opacity:0;
-  pointer-events:none;
-  transform: scale(1.02);
-}
+    // ---------- Mobile detection ----------
+    const setMode = () => {
+      const isMobile =
+        window.matchMedia("(max-width: 820px)").matches ||
+        window.matchMedia("(orientation: portrait)").matches;
 
-.loaderWrap{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+      document.body.classList.toggle("mobile", isMobile);
+      return isMobile;
+    };
 
-.spinner{
-  width:58px;
-  height:58px;
-  border-radius:50%;
-  border:7px solid rgba(182, 30, 115, 0.35);
-  border-top-color: var(--magenta);
-  animation: spin .9s linear infinite;
-}
-@keyframes spin{ to{ transform: rotate(360deg); } }
+    // ---------- Scaling ----------
+    const fit = () => {
+      const isMobile = document.body.classList.contains("mobile");
+      const W = isMobile ? 720 : 2048;
+      const H = isMobile ? 1600 : 1152;
 
-.loadingText{
-  font: 600 14px/1.1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-  color: var(--magenta);
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
+      const scaleBase = Math.min(window.innerWidth / W, window.innerHeight / H);
+      const scale = isMobile ? scaleBase * 1.06 : scaleBase;
 
-/* ========= LAYOUT ========= */
-.viewport{
-  width:100vw;
-  height: var(--vh);
-  background: var(--milk);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
+      artboard.style.transform = `scale(${scale})`;
+    };
 
-.artboard{
-  position:relative;
-  width: calc(var(--W) * 1px);
-  height: calc(var(--H) * 1px);
-  background: var(--milk);
-  transform-origin: center center;
-  will-change: transform;
-}
+    // ---------- Wait images ----------
+    const waitForImages = async () => {
+      const imgs = Array.from(document.querySelectorAll("img"));
+      await Promise.all(
+        imgs.map(
+          (img) =>
+            new Promise<void>((resolve) => {
+              const el = img as HTMLImageElement;
 
-/* DESKTOP: group shift */
-.leftGroup{
-  position:absolute;
-  inset:0;
-  transform: translateX(var(--leftShift));
-  z-index:50;
-  pointer-events:none;
-}
-.leftGroup img{ pointer-events:auto; }
+              // decode() is great when available
+              // @ts-ignore
+              if (el.decode) {
+                // @ts-ignore
+                el.decode().then(resolve).catch(resolve);
+                return;
+              }
 
-/* ========= DESKTOP POSITIONS ========= */
-.logo{ position:absolute; left:250px; top:80px; width:370px; z-index:5; }
-.coming{ position:absolute; left:50px; top:400px; width:820px; z-index:5; }
-.forme3{ position:absolute; left:860px; top:320px; width:95px; z-index:6; }
+              if (el.complete) return resolve();
+              el.onload = () => resolve();
+              el.onerror = () => resolve();
+            })
+        )
+      );
+    };
 
-.qr{
-  position:absolute;
-  left:150px;
-  bottom:85px;
-  width:380px;
-  z-index:8;
-  cursor:pointer;
-  transform-origin:center center;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,.12));
-}
+    // ---------- Tab title ----------
+    const originalTitle = document.title || "Bimbies - Coming Soon";
+    const leaveTitle = "😄 Come back! Better diapers are waiting";
 
-/* HERO */
-.hero{
-  position:absolute;
-  right:-510px;
-  top:-20px;
-  width:1500px;
-  z-index:2;
-  pointer-events:none;
-}
+    const onVisibilityChange = () => {
+      document.title = document.hidden ? leaveTitle : originalTitle;
+    };
 
-.heart{
-  position:absolute;
-  right:370px;
-  top:430px;
-  width:210px;
-  z-index:6;
-  pointer-events:none;
-}
+    // ---------- Click handler (use delegation, no ref needed) ----------
+    const onQrClick = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (target.classList.contains("qr")) {
+        window.open(FB_URL, "_blank", "noopener,noreferrer");
+      }
+    };
 
-/* ========= ANIMATIONS ========= */
-.reveal{
-  opacity:0;
-  transform: translateY(16px) scale(.985);
-  filter: blur(10px);
-  transition:
-    opacity .85s ease,
-    transform 1.05s cubic-bezier(.2,.85,.2,1),
-    filter 1.1s ease;
-}
-body.ready .reveal{
-  opacity:1;
-  transform: translateY(0) scale(1);
-  filter: blur(0);
-}
+    // ---------- Refresh ----------
+    const refresh = () => {
+      setVH();
+      setMode();
+      fit();
+    };
 
-.d1{ transition-delay: .05s; }
-.d2{ transition-delay: .16s; }
-.d3{ transition-delay: .26s; }
-.d4{ transition-delay: .36s; }
-.d5{ transition-delay: .46s; }
-.d6{ transition-delay: .56s; }
+    window.addEventListener("resize", refresh);
+    window.addEventListener("orientationchange", refresh);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    document.addEventListener("click", onQrClick);
 
-@keyframes qrPulse {
-  0%   { transform: scale(1); }
-  35%  { transform: scale(1.06); }
-  60%  { transform: scale(.98); }
-  100% { transform: scale(1); }
-}
-body.ready .qr.pulse{ animation: qrPulse 1.6s ease-in-out infinite; }
-.qr:hover{ animation-play-state: paused; transform: scale(1.04); }
+    refresh();
 
-@keyframes floaty {
-  0%   { transform: translateY(0); }
-  50%  { transform: translateY(-10px); }
-  100% { transform: translateY(0); }
-}
-body.ready .floaty{ animation: floaty 5.5s ease-in-out infinite; }
+    (async () => {
+      await waitForImages();
+      document.body.classList.add("ready");
+      setReady(true);
+    })();
 
-@media (prefers-reduced-motion: reduce){
-  .spinner{ animation: none; }
-  .reveal{ transition: none; opacity:1; transform:none; filter:none; }
-  body.ready .qr.pulse{ animation: none; }
-  body.ready .floaty{ animation: none; }
-}
+    return () => {
+      window.removeEventListener("resize", refresh);
+      window.removeEventListener("orientationchange", refresh);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      document.removeEventListener("click", onQrClick);
+    };
+  }, []);
 
-/* =======================================================================
-   MOBILE
-   ======================================================================= */
-body.mobile .artboard{
-  width: 720px;
-  height: 1600px;
-}
-body.mobile .leftGroup{ transform:none; }
+  return (
+    <>
+      {/* PRELOADER */}
+      <div className={`preloader ${ready ? "hide" : ""}`} aria-hidden={ready}>
+        <div className="loaderWrap">
+          <div className="spinner" />
+          <div className="loadingText">Loading…</div>
+        </div>
+      </div>
 
-body.mobile .forme3{ display:none; }
-body.mobile .heart{ display:none; }
+      <main className="viewport">
+        <div className="artboard" ref={artboardRef}>
+          <div className="leftGroup">
+            <img className="logo reveal d1" src="/bimbies-logo.png" alt="Bimbies logo" draggable={false} />
+            <img className="coming reveal d2" src="/coming-soon.png" alt="Coming soon" draggable={false} />
+            <img className="forme3 reveal d3" src="/bimbies-forme-3.png" alt="" draggable={false} />
+            <img className="qr reveal d6 pulse" src="/qr-code.png" alt="QR code" draggable={false} />
+          </div>
 
-body.mobile .logo{
-  left: 50%;
-  top: 70px;
-  width: 300px;
-  transform: translateX(-50%);
-}
-
-body.mobile .coming{
-  left: 50%;
-  top: 310px;
-  width: 520px;
-  transform: translateX(-50%);
-}
-
-body.mobile .hero{
-  left: 50%;
-  right:auto;
-  top: 670px;
-  width: 1200px;
-  transform: translateX(-50%) translateX(-40px);
-  z-index: 20;
-}
-
-body.mobile .qr{
-  left: 50%;
-  bottom: 60px;
-  width: 450px;
-  transform: translateX(-50%);
-  z-index: 999;
+          <img className="hero reveal d4 floaty" src="/light-overlay.png" alt="" draggable={false} />
+          <img className="heart reveal d5" src="/bimbies-forme-2.png" alt="" draggable={false} />
+        </div>
+      </main>
+    </>
+  );
 }
