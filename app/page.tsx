@@ -1,109 +1,104 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Page() {
   const artboardRef = useRef<HTMLDivElement | null>(null);
-  const preloaderRef = useRef<HTMLDivElement | null>(null);
+  const qrRef = useRef<HTMLImageElement | null>(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const artboard = artboardRef.current;
-    const preloader = preloaderRef.current;
-    const qr = document.getElementById("qr") as HTMLImageElement | null;
+    const qr = qrRef.current;
+    if (!artboard || !qr) return;
 
-    if (!artboard || !preloader || !qr) return;
+    /* ===== viewport fix ===== */
+    const setVH = () => {
+      document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
+    };
 
-    function setVH() {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty("--vh", `${vh}px`);
-    }
-
-    function setMode() {
+    /* ===== mobile detection ===== */
+    const setMode = () => {
       const isMobile =
         window.matchMedia("(max-width: 820px)").matches ||
         window.matchMedia("(orientation: portrait)").matches;
       document.body.classList.toggle("mobile", isMobile);
-    }
+    };
 
-    function getBoardWH() {
+    /* ===== scaling ===== */
+    const fit = () => {
       const isMobile = document.body.classList.contains("mobile");
-      return isMobile ? { W: 720, H: 1600 } : { W: 2048, H: 1152 };
-    }
+      const W = isMobile ? 720 : 2048;
+      const H = isMobile ? 1600 : 1152;
 
-    function fit() {
-      const el = artboardRef.current; // ✅ always safe
-      if (!el) return;
-
-      const { W, H } = getBoardWH();
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-
-      const isMobile = document.body.classList.contains("mobile");
       const scale = isMobile
-        ? Math.min(vw / W, vh / H) * 1.06
-        : Math.min(vw / W, vh / H);
+        ? Math.min(window.innerWidth / W, window.innerHeight / H) * 1.06
+        : Math.min(window.innerWidth / W, window.innerHeight / H);
 
-      el.style.transform = `translateZ(0) scale(${scale})`;
-    }
+      artboard.style.transform = `scale(${scale})`;
+    };
 
-    function waitForImages() {
+    /* ===== wait images ===== */
+    const waitForImages = async () => {
       const imgs = Array.from(document.querySelectorAll("img"));
-      return Promise.all(
+      await Promise.all(
         imgs.map(
-          (img) =>
-            new Promise<void>((resolve) => {
+          img =>
+            new Promise<void>(resolve => {
               // @ts-ignore
               if (img.decode) img.decode().then(resolve).catch(resolve);
               else if ((img as HTMLImageElement).complete) resolve();
               else {
-                img.addEventListener("load", () => resolve(), { once: true });
-                img.addEventListener("error", () => resolve(), { once: true });
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
               }
             })
         )
       );
-    }
+    };
 
-    function refreshAll() {
+    /* ===== funny tab message ===== */
+    const originalTitle = document.title;
+    const leaveTitle = "😄 Come back! Better diapers are waiting";
+
+    const onVisibilityChange = () => {
+      document.title = document.hidden ? leaveTitle : originalTitle;
+    };
+
+    /* ===== events ===== */
+    const refresh = () => {
       setVH();
       setMode();
       fit();
-    }
-
-    const onResize = () => refreshAll();
-    const onOrientation = () => refreshAll();
-
-    // QR click
-    const onQrClick = () => {
-      window.open(
-        "https://www.facebook.com/BimbiesOfficielle",
-        "_blank",
-        "noopener,noreferrer"
-      );
     };
 
-    window.addEventListener("resize", onResize);
-    window.addEventListener("orientationchange", onOrientation);
-    qr.addEventListener("click", onQrClick);
+    window.addEventListener("resize", refresh);
+    window.addEventListener("orientationchange", refresh);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
-    refreshAll();
+    qr.addEventListener("click", () => {
+      window.open("https://www.facebook.com/BimbiesOfficielle", "_blank");
+    });
+
+    refresh();
 
     (async () => {
       await waitForImages();
       document.body.classList.add("ready");
-      setTimeout(() => preloader.classList.add("hide"), 180);
+      setReady(true);
     })();
 
     return () => {
-      window.removeEventListener("resize", onResize);
-      window.removeEventListener("orientationchange", onOrientation);
-      qr.removeEventListener("click", onQrClick);
+      window.removeEventListener("resize", refresh);
+      window.removeEventListener("orientationchange", refresh);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 
   return (
     <>
-      <div className="preloader" id="preloader" ref={preloaderRef}>
+      {/* PRELOADER */}
+      <div className={`preloader ${ready ? "hide" : ""}`}>
         <div className="loaderWrap">
           <div className="spinner" />
           <div className="loadingText">Loading…</div>
@@ -111,16 +106,16 @@ export default function Page() {
       </div>
 
       <div className="viewport">
-        <div className="artboard" id="artboard" ref={artboardRef}>
+        <div className="artboard" ref={artboardRef}>
           <div className="leftGroup">
-            <img className="logo reveal d1" src="/Bimbies Logo.png" alt="Bimbies Logo" />
-            <img className="coming reveal d2" src="/Coming Soon.png" alt="Coming Soon" />
-            <img className="forme3 reveal d3" src="/Bimbies Forme 3.png" alt="Decoration" />
-            <img className="qr reveal d6 pulse" id="qr" src="/Qr Code.png" alt="QR Code" />
+            <img className="logo reveal d1" src="/Bimbies Logo.png" />
+            <img className="coming reveal d2" src="/Coming Soon.png" />
+            <img className="forme3 reveal d3" src="/Bimbies Forme 3.png" />
+            <img className="qr reveal d6 pulse" ref={qrRef} src="/Qr Code.png" />
           </div>
 
-          <img className="hero reveal d4" src="/Light Overlay.png" alt="Baby Hero" />
-          <img className="heart reveal d5" src="/Bimbies Forme 2.png" alt="Heart" />
+          <img className="hero reveal d4 floaty" src="/Light Overlay.png" />
+          <img className="heart reveal d5" src="/Bimbies Forme 2.png" />
         </div>
       </div>
     </>
